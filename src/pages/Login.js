@@ -12,6 +12,7 @@ import React, { useState } from 'react';
 import Label from '../components/atoms/Label';
 import Input from '../components/atoms/Input';
 import { getData, storeData } from '../storages/localStorage.js';
+import axios from 'axios';
 
 const Login = ({ navigation }) => {
   // Lebih Rapihnya
@@ -32,20 +33,29 @@ const Login = ({ navigation }) => {
     }
 
     // Untuk melihat data yang sudah di simpan di local storage
-    getData('auth').then(async res => {
-      console.log('Data dari local storage', res);
-    });
+    // getData('auth').then(async res => {
+    //   console.log('Data dari local storage', res);
+    // });
 
-    // Jika vaidasi diatas sudah benar, maka akan muncul alert login berhasil
-    Alert.alert('Login Berhasil');
+    axios.post('https://example-api.darms.my.id/api/login', LoginForm)
+    .then((response) => {
+      Alert.alert(`Login Berhasil, Selamat Datang ${response.data.user.name}`);
 
-    // Jika sudah behasil login, maka akan direset menjadi kosong
+      // Menyimpan data ke local storage
+      storeData('auth', response.data.user);
+      storeData('token', response.data.token);
+
+       // Jika sudah behasil login, maka akan direset menjadi kosong
     setLoginForm({
       email: '',
       password: '',
     });
+    navigation.replace('Home');
 
-    navigation.navigate('Home');
+      console.log(response.data);
+    }).catch((error) => {
+      Alert.alert('Login Gagal', error.message);
+    })
   }
 
   return (

@@ -11,16 +11,17 @@ import {
 import React, { useState } from 'react';
 import Input from '../components/atoms/Input';
 import { storeData } from '../storages/localStorage';
+import axios from 'axios';
 
 const SignUp = ({ navigation }) => {
   const [SignupForm, setSignupForm] = useState({
-    username: '',
+    name: '',
     email: '',
     password: '',
   });
 
   function submitSignup() {
-    if (SignupForm.username == '') {
+    if (SignupForm.name == '') {
       Alert.alert('Username harus diisi');
       return;
     }
@@ -32,11 +33,41 @@ const SignUp = ({ navigation }) => {
       Alert.alert('Password harus diisi');
       return;
     }
-    Alert.alert('Sign Up Berhasil');
 
-    storeData('auth', SignupForm);
+    const data = {
+      name: SignupForm.name,
+      email: SignupForm.email,
+      password: SignupForm.password,
+      password_confirmation: SignupForm.password,
+    };
+    
+    axios
+      .post('https://example-api.darms.my.id/api/register', data)
+      .then(response => {
+        Alert.alert(
+          `Register Berhasil, Silahkan Login`,
+        );
 
-    navigation.replace('Login');
+        // Jika sudah behasil login, maka akan direset menjadi kosong
+        setSignupForm({
+          name: '',
+          email: '',
+          password: '',
+        });
+        navigation.replace('Login');
+
+        console.log(response.data);
+      })
+      .catch(error => {
+        Alert.alert('Register Gagal', error.message);
+        console.log(error);
+      });
+
+    // Alert.alert('Sign Up Berhasil');
+
+    // storeData('auth', SignupForm);
+
+    // navigation.replace('Login');
   }
 
   return (
@@ -49,14 +80,14 @@ const SignUp = ({ navigation }) => {
       </Text>
       <View style={styles.SignupForm}>
         <Input
-          label="Username"
+          label="Name"
           placeholder="John Doe"
           required
-          value={SignupForm.username}
-          onChange={(isiText) => {
+          value={SignupForm.name}
+          onChange={isiText => {
             setSignupForm({
               ...SignupForm,
-              username: isiText,
+              name: isiText,
             });
           }}
         />
@@ -66,7 +97,7 @@ const SignUp = ({ navigation }) => {
           required={true}
           keyboardType="email-address"
           value={SignupForm.email}
-          onChange={(isiText) => {
+          onChange={isiText => {
             setSignupForm({
               ...SignupForm,
               email: isiText,
